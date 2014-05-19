@@ -1,5 +1,4 @@
 var ws = new WebSocket("ws://localhost:8080/ws");
-var game_id = "";
 
 ws.onclose = function() { 
 	alert("Connection closed...") 
@@ -34,17 +33,22 @@ ws.onmessage = function(evt) {
 			}
 			break;
 		case "fight":
-      game_id = json.id;
 			$("#lobby").hide();
 			$("#game").removeClass("hidden");	
 			break;
     case "ball-move":
+    	console.log("ball move" + json.params.x + ":" + json.params.y);
       break;
+    case "platform-move":
+    	console.log(json.params.side + " move to " + json.params.y);
+    	break;
     case "game-end":
       alert(json.params);
       break;
+  	case "user-move":
+  		break;
 		default:
-			console.log("Unknown action: " + json);
+			console.log("Unknown action: " + json.method);
 	}
 };
 
@@ -64,7 +68,6 @@ canvas.addEventListener('mousemove', function(evt) {
   var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
   ws.send(JSON.stringify({
   	method: "user-move",
-    id: game_id,
   	pos: mousePos.y
   }));
 }, false);
