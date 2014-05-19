@@ -1,4 +1,5 @@
 var ws = new WebSocket("ws://localhost:8080/ws");
+var game_id = "";
 
 ws.onclose = function() { 
 	alert("Connection closed...") 
@@ -28,27 +29,22 @@ ws.onmessage = function(evt) {
 			$("#lobby table tbody tr[data-id='" + json.id + "']").remove();
 			break;
 		case "invate-fight":
-			if (json.result == "ok") 
-				{	
-					$("#lobby").hide();
-					$("#game").removeClass("hidden");
-				} 
-				else {
-					alert("bad fight");
-				}
+			if (json.result == "error") {			
+				alert("bad fight");
+			}
 			break;
 		case "fight":
-			alert("fight");
+      game_id = json.id;
 			$("#lobby").hide();
 			$("#game").removeClass("hidden");	
 			break;
-		case "op-move":
-			console.log("Opponent mouse move y: " + json.y);
-			break;
-		case "op-action":
-			break;
+    case "ball-move":
+      break;
+    case "game-end":
+      alert(json.params);
+      break;
 		default:
-			alert(json);
+			console.log("Unknown action: " + json);
 	}
 };
 
@@ -67,12 +63,11 @@ canvas.addEventListener('mousemove', function(evt) {
   var mousePos = getMousePos(canvas, evt);
   var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
   ws.send(JSON.stringify({
-  	method: "op-action",
+  	method: "user-move",
+    id: game_id,
   	pos: mousePos.y
   }));
 }, false);
-
-var game_session = "";
 
 $(document).ready(function() {
   $("#signin form").submit(function(event){

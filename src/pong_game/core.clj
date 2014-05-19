@@ -10,13 +10,13 @@
 
 ;; item -> {channel-id {:name user-name :channel user-channel}}
 (def lobby (atom {})) 
-;; item -> {channel-id {:name user-name :channel user-channel :opp opponent-id}}
+;; item -> {channel-id {:game game-agent :play (fn)}}
 (def game (atom {})) 
 
 (defn- uuid [] 
 	(str (java.util.UUID/randomUUID)))
 
-(defn- send-all [data]
+(defn send-all [data]
 	(doseq [ch (map :channel (vals @lobby))]
 		(send! ch (json/generate-string data))))
 
@@ -38,33 +38,33 @@
 
 (defn user-start-fight [me-id op-id]
 	(if-let [[me op] (map #(get @lobby %) [me-id op-id])]
-		(do
-			(send! (:channel op) (json/generate-string {:method "fight"}))
+		(let [game-id (uuid)]
+			(send! (:channel op) (json/generate-string {:method "fight" :id game-id}))
 			(user-exit me-id)
 			(user-exit op-id)
-			(swap! game assoc (uuid) (game/new-game me op))
+			(swap! game assoc game-id (game/new-game me op))
 			"ok")
 		"error"))
 
-(defn user-fight [id y]
-	(let [me (get @game id)
-				op (get @game (:opp me))]
-		(send! (:channel op) (json/generate-string {:method "op-move" :y y}))))
+(defn user-move [game-id ch-id y]
+  (if-let [state (get @game game-id)]
+    ()))
+
+(defn action-handler [channel data]
+  (let [json (json/parse-string data)]
+    (json/generate-string
+      {:method (json "method")
+       :result (case (json "method")
+          "signin" (user-signin (json "login") channel)
+          "invate-fight" (user-start-fight (hash channel) (json "opponent"))
+          "user-move" (user-move (json "id") (hash channel) (json "pos")))})))
 
 (defn websocket-handler [request]
 	(with-channel request channel
     (on-close channel 
     	(fn [status] (user-exit (hash channel))))
     (on-receive channel 
-    	(fn [data]
-  			(let [json (json/parse-string data)]
-  				(send! channel
-						(json/generate-string
-							{:method (json "method")
-							 :result (case (json "method")
-							 		"signin" (user-signin (json "login") channel)
-							 		"invate-fight" (user-start-fight (hash channel) (json "opponent"))
-							 		"op-action" (user-fight (hash channel) (json "pos")))})))))))
+    	(fn [data] (send! channel (action-handler channel data))))))
 
 (defroutes app 
 	(GET "/" [] (resource-response "index.html" {:root "public"}))
