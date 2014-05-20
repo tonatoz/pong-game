@@ -20,12 +20,12 @@
 (defn user-exit [channel-id]
 	(swap! lobby dissoc channel-id)
 	(if-let [game-agent (get @game channel-id)]
-		(send game-agent assoc nil))
+		(send game-agent assoc-in :status :stop))
 	(swap! game dissoc channel-id)
 	(send-all {:method "rem-user" :id channel-id}))
 
 (defn user-signin [username channel]
-	(if-not (contains? @lobby username)
+	(if (empty? (filter #(= username (:name %)) @lobby))
 		(do 
 			(send-all {
 				:method "add-user" 

@@ -1,3 +1,37 @@
+var leftY = 80;
+var rightY = 80;
+var ball = {x:250, y:200};
+
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+
+function circle(x,y,r) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI*2, true);
+  ctx.fillStyle = "black";
+  ctx.fill();
+}
+
+function rect(x,y,w,h) {
+  ctx.beginPath();
+  ctx.rect(x,y,w,h);
+  ctx.closePath();
+  ctx.fillStyle = "red";
+  ctx.fill();
+  ctx.stroke();
+}
+
+function clear() {
+  ctx.clearRect(0, 0, 500, 400);
+}
+
+function drawField(){
+  clear();
+  rect(0, leftY, 5, 75);
+  rect(495, rightY, 5, 75);
+  circle(ball.x, ball.y, 10);
+}
+
 var ws = new WebSocket("ws://localhost:8080/ws");
 
 ws.onclose = function() { 
@@ -35,12 +69,19 @@ ws.onmessage = function(evt) {
 		case "fight":
 			$("#lobby").hide();
 			$("#game").removeClass("hidden");	
+      drawField();
 			break;
     case "ball-move":
-    	console.log("ball move" + json.params.x + ":" + json.params.y);
+      ball.x = json.params.x;
+      ball.y = json.params.y;
+      drawField();
       break;
     case "platform-move":
-    	console.log(json.params.side + " move to " + json.params.y);
+      if (json.params.side == "left") 
+        leftY = json.params.y;      
+      else
+        rightY = json.params.y;
+      drawField();
     	break;
     case "game-end":
       alert(json.params);
@@ -52,27 +93,15 @@ ws.onmessage = function(evt) {
 	}
 };
 
-function getMousePos(canvas, evt) {
-  var rect = canvas.getBoundingClientRect();
-  return {
-    x: evt.clientX - rect.left,
-    y: evt.clientY - rect.top
-  };
-}
-
-var canvas = document.getElementById('myCanvas');
-var context = canvas.getContext('2d');
-
-canvas.addEventListener('mousemove', function(evt) {
-  var mousePos = getMousePos(canvas, evt);
-  var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
-  ws.send(JSON.stringify({
-  	method: "user-move",
-  	pos: mousePos.y
-  }));
-}, false);
-
 $(document).ready(function() {
+  $("#myCanvas").mousemove(function(evt){
+    var mouseY = evt.pageY - canvas.getBoundingClientRect().top;
+    ws.send(JSON.stringify({
+      method: "user-move",
+      pos: mouseY
+    })); 
+  });
+
   $("#signin form").submit(function(event){
   	event.preventDefault();
     ws.send(JSON.stringify({

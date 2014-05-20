@@ -2,9 +2,9 @@
 	(:require [org.httpkit.server :refer [send!]]
 						[cheshire.core :refer [generate-string]]))
 
-(def field {:w 100 :h 100})
-(def ball-radius 2)
-(def platform {:w 4 :h 10})
+(def field {:w 500 :h 400})
+(def ball-radius 10)
+(def platform {:w 5 :h 75})
 
 (defn new-game [left-user right-user]
 	(agent {
@@ -18,7 +18,8 @@
 			:x (/ (:w field) 2)
 			:y (/ (:h field) 2)
 			:x-speed 1
-			:y-speed 1}}))
+			:y-speed 1}
+		:status :run}))
 
 (defn say [state action params]
 	(let [body (generate-string {:method action :params params})]
@@ -27,28 +28,28 @@
 
 (defn check-end-of-game [state]
 	(let [left (- (-> @state :ball :x) ball-radius)
-				right (+ ball-radius (-> @state :ball :x))]
+				right (+ (-> @state :ball :x) ball-radius)]
 		(cond 
-			(<= 0 left) "win right"
-			(>= (:w field) right) "win left")
-			:else nil))
+			(<= left 0) "win right"
+			(>= right (:w field)) "win left"
+			:else nil)))
 
 (defn process-ball [state]
-	(let [top (+ ball-radius (-> @state :ball :y))
-				bottom (- (-> @state :ball :y) ball-radius)
+	(let [top (- (-> @state :ball :y) ball-radius)
+				bottom (+ (-> @state :ball :y) ball-radius)
 				left (- (-> @state :ball :x) ball-radius)
-				right (+ ball-radius (-> @state :ball :x))
+				right (+ (-> @state :ball :x) ball-radius)
 				on-platform? (fn [y] (and (>= top y) (<= bottom (+ y (:h platform)))))]
 		(cond 
 			(or
-				(<= 0 top) 
-				(>= (:h field) bottom)) (send state update-in [:ball :y-speed] * -1)
+				(<= top 0) 
+				(>= bottom (:h field))) (send state update-in [:ball :y-speed] * -1)
 			(or 
 				(and
-					(<= (:w platform) left)
+					(<= left (:w platform))
 					(on-platform? (-> @state :left :y)))
 				(and
-					(>= (- (:w field) (:w platform)) right)
+					(>= right (- (:w field) (:w platform)))
 					(on-platform? (-> @state :right :y)))) (send state update-in [:ball :x-speed] * -1))))
 
 (defn move [state]
@@ -65,8 +66,8 @@
 (defn game-tick [game]
 	(if-let [game-result (check-end-of-game game)]
 		(do
-			(println "game end: " game-result) 
-			(say game "game-end" game-result))
+			(say game "game-end" game-result)
+			(send game assoc-in :status :stop))
 		(do 
 			(process-ball game)
 			(move game))))
@@ -74,7 +75,7 @@
 (defn run-game [game]
 	(future
 		(loop []
-			(game-tick game)
-			(Thread/sleep 1000)
-			(when game 
+			(when (not= :stop (:status @game)) 
+				(game-tick game)
+				(Thread/sleep 10)
 				(recur)))))
