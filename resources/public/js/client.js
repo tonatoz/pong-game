@@ -1,41 +1,74 @@
-var leftY = 80;
-var rightY = 80;
-var ball = {x:250, y:200};
+// window.requestAnimFrame = (function(){
+//   return  window.requestAnimationFrame       || 
+//     window.webkitRequestAnimationFrame || 
+//     window.mozRequestAnimationFrame    || 
+//     window.oRequestAnimationFrame      || 
+//     window.msRequestAnimationFrame     ||  
+//     function( callback ){
+//       return window.setTimeout(callback, 100 / 60);
+//     };
+// })();
 
-var canvas = document.getElementById("myCanvas");
-var ctx = canvas.getContext("2d");
+// window.cancelRequestAnimFrame = ( function() {
+//   return window.cancelAnimationFrame          ||
+//     window.webkitCancelRequestAnimationFrame    ||
+//     window.mozCancelRequestAnimationFrame       ||
+//     window.oCancelRequestAnimationFrame     ||
+//     window.msCancelRequestAnimationFrame        ||
+//     clearTimeout
+// } )();
 
-function circle(x,y,r) {
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI*2, true);
+var canvas = document.getElementById("canvas"),
+  ctx = canvas.getContext("2d"), 
+  W = 729, 
+  H = 537;
+
+function paintCanvas() {
   ctx.fillStyle = "black";
-  ctx.fill();
+  ctx.fillRect(0, 0, W, H);
 }
 
-function rect(x,y,w,h) {
-  ctx.beginPath();
-  ctx.rect(x,y,w,h);
-  ctx.closePath();
-  ctx.fillStyle = "red";
-  ctx.fill();
-  ctx.stroke();
+function Paddle(pos) {
+  return {
+    w: 5,
+    h: 150,      
+    x: (pos == "left") ? 0 : W - 5,
+    y: W/2 - 5/2,
+
+    draw: function() {
+      ctx.fillStyle = "white";
+      ctx.fillRect(this.x, this.y, this.w, this.h);
+    }}
 }
 
-function clear() {
-  ctx.clearRect(0, 0, 500, 400);
-}
+ball = {
+  x: 50,
+  y: 50, 
+  r: 5,
+  
+  draw: function() {
+    ctx.beginPath();
+    ctx.fillStyle = "white";
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI*2, false);
+    ctx.fill();
+  }
+};
 
-function drawField(){
-  clear();
-  rect(0, leftY, 5, 75);
-  rect(495, rightY, 5, 75);
-  circle(ball.x, ball.y, 10);
+left = Paddle("left");   
+right =  Paddle("right");
+
+function draw() {    
+  paintCanvas();
+  left.draw();
+  right.draw();
+  ball.draw();
 }
 
 var ws = new WebSocket("ws://localhost:8080/ws");
 
 ws.onclose = function() { 
-	alert("Connection closed...") 
+	alert("Connection closed...");
+  window.location.replace("http://localhost:8080/");
 }; 
 
 ws.onmessage = function(evt) { 
@@ -69,22 +102,23 @@ ws.onmessage = function(evt) {
 		case "fight":
 			$("#lobby").hide();
 			$("#game").removeClass("hidden");	
-      drawField();
+      draw();
 			break;
     case "ball-move":
       ball.x = json.params.x;
       ball.y = json.params.y;
-      drawField();
+      draw();
       break;
     case "platform-move":
       if (json.params.side == "left") 
-        leftY = json.params.y;      
+        left.y = json.params.y;      
       else
-        rightY = json.params.y;
-      drawField();
+        right.y = json.params.y;
+      draw();
     	break;
     case "game-end":
       alert(json.params);
+      // window.location.replace("http://localhost:8080/");
       break;
   	case "user-move":
   		break;
@@ -94,7 +128,7 @@ ws.onmessage = function(evt) {
 };
 
 $(document).ready(function() {
-  $("#myCanvas").mousemove(function(evt){
+  $("#canvas").mousemove(function(evt){
     var mouseY = evt.pageY - canvas.getBoundingClientRect().top;
     ws.send(JSON.stringify({
       method: "user-move",

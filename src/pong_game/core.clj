@@ -13,16 +13,14 @@
 ;; item -> {user-channel (ref: user-game)}
 (def game (atom {})) 
 
-(defn send-all [data]
+(defn- send-all [data]
 	(doseq [ch (map :channel (vals @lobby))]
 		(send! ch (json/generate-string data))))
 
-(defn user-exit [channel-id]
+(defn- user-exit [channel-id]
 	(swap! lobby dissoc channel-id)
-	(if-let [game-agent (get @game channel-id)]
-		(send game-agent assoc-in :status :stop))
-	(swap! game dissoc channel-id)
-	(send-all {:method "rem-user" :id channel-id}))
+  (send-all {:method "rem-user" :id channel-id})
+	(swap! game dissoc channel-id))
 
 (defn user-signin [username channel]
 	(if (empty? (filter #(= username (:name %)) @lobby))

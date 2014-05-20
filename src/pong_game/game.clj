@@ -2,80 +2,97 @@
 	(:require [org.httpkit.server :refer [send!]]
 						[cheshire.core :refer [generate-string]]))
 
-(def field {:w 500 :h 400})
-(def ball-radius 10)
-(def platform {:w 5 :h 75})
+(def field {:w 729 :h 537})
+(def ^Integer ball-radius 5)
+(def platform {:w 5 :h 150})
 
 (defn new-game [left-user right-user]
 	(agent {
 		:left {
 			:user left-user
+			:x 0
 			:y (- (/ (:h field) 2) (/ (:h platform) 2))}
 		:right {
 			:user right-user
+			:x (- (:w field) (:w platform))
 			:y (- (/ (:h field) 2) (/ (:h platform) 2))}
 		:ball {
-			:x (/ (:w field) 2)
-			:y (/ (:h field) 2)
-			:x-speed 1
-			:y-speed 1}
+			:x 50
+			:y 50
+			:x-speed 8
+			:y-speed 4}
 		:status :run}))
 
-(defn say [state action params]
+(defn- say [state action params]
 	(let [body (generate-string {:method action :params params})]
-		(send! (-> @state :left :user :channel) body)
-		(send! (-> @state :right :user :channel) body)))
+		(when-let [ch (-> @state :left :user :channel)]
+			(send! ch body))
+		(when-let [ch (-> @state :right :user :channel)]
+			(send! ch body))))
 
-(defn check-end-of-game [state]
+(defn platform-move [state ch-id y]
+	(when (nil? (agent-error state))
+		(let [side (if (= ch-id (hash (-> @state :left :user :channel))) :left :right)]		
+			(when (and (>= y 0) (<= y (- (:h field) (:h platform))))	
+				(println "Platform " side " move " y)		
+				(send state assoc-in [side :y] y)
+				(say state "platform-move" {:side side :y y})))))
+
+(defn- check-end-of-game [state]
 	(let [left (- (-> @state :ball :x) ball-radius)
 				right (+ (-> @state :ball :x) ball-radius)]
-		(cond 
-			(<= left 0) "win right"
-			(>= right (:w field)) "win left"
-			:else nil)))
+		(or
+			(< left 0) 
+			(> right (:w field)))))
 
-(defn process-ball [state]
-	(let [top (- (-> @state :ball :y) ball-radius)
-				bottom (+ (-> @state :ball :y) ball-radius)
-				left (- (-> @state :ball :x) ball-radius)
-				right (+ (-> @state :ball :x) ball-radius)
-				on-platform? (fn [y] (and (>= top y) (<= bottom (+ y (:h platform)))))]
-		(cond 
+(defn- check-paltform-collision [state side]
+	(let [bx (-> @state :ball :x)
+				by (-> @state :ball :y)
+				px (-> @state side :x)
+				py (-> @state side :y)]
+		(and 
+			(and 
+				(>= (- by ball-radius) py)
+		 		(<= (+ by ball-radius) (+ py (:h platform))))
 			(or
-				(<= top 0) 
-				(>= bottom (:h field))) (send state update-in [:ball :y-speed] * -1)
-			(or 
-				(and
-					(<= left (:w platform))
-					(on-platform? (-> @state :left :y)))
-				(and
-					(>= right (- (:w field) (:w platform)))
-					(on-platform? (-> @state :right :y)))) (send state update-in [:ball :x-speed] * -1))))
+				(and (>= bx (- px (:w platform)))
+						 (> px 0))
+				(and (<= bx (:w platform))
+					   (= px 0))))))
 
-(defn move [state]
+(defn- process-ball [state]
+	(let [top (- (-> @state :ball :y) ball-radius)
+				bottom (+ (-> @state :ball :y) ball-radius)]
+		(when (< top 0) 
+			(send state update-in [:ball :y-speed] * -1)
+			(send state assoc-in [:ball :y] ball-radius))
+		(when (> bottom (:h field)) 
+			(send state update-in [:ball :y-speed] * -1)
+			(send state assoc-in [:ball :y] (- (:h field) ball-radius)))))
+
+(defn- ball-move [state]
 	(send state update-in [:ball :x] + (-> @state :ball :x-speed))
 	(send state update-in [:ball :y] + (-> @state :ball :y-speed))
 	(println "Coord: " {:x (-> @state :ball :x) :y (-> @state :ball :y)})
 	(say state "ball-move" {:x (-> @state :ball :x) :y (-> @state :ball :y)}))
 
-(defn platform-move [state ch-id y]
-	(let [side (if (= ch-id (hash (-> @state :left :user :channel))) :left :right)]
-		(send state assoc-in [side :y] y)
-		(say state "platform-move" {:side side :y y})))
-
-(defn game-tick [game]
-	(if-let [game-result (check-end-of-game game)]
+(defn- update [game]
+	(when (or (check-paltform-collision game :left)
+						(check-paltform-collision game :right))
+		(send game update-in [:ball :x-speed] * -1))
+	(if (check-end-of-game game)
 		(do
-			(say game "game-end" game-result)
-			(send game assoc-in :status :stop))
-		(do 
-			(process-ball game)
-			(move game))))
+			(println "End of the game")
+			(say game "game-end" "thank you!")
+			(send game nil))
+	(do
+		(process-ball game)	
+		(ball-move game))))
 
 (defn run-game [game]
 	(future
 		(loop []
-			(when (not= :stop (:status @game)) 
-				(game-tick game)
-				(Thread/sleep 10)
+			(when game
+				(update game)
+				(Thread/sleep (/ 1000 60))
 				(recur)))))
