@@ -21,7 +21,7 @@
 			:y 50
 			:x-speed 8
 			:y-speed 4}
-		:status :run}))
+		:status true} :error-mode :continue))
 
 (defn- say [state action params]
 	(let [body (generate-string {:method action :params params})]
@@ -31,12 +31,10 @@
 			(send! ch body))))
 
 (defn platform-move [state ch-id y]
-	(when (nil? (agent-error state))
-		(let [side (if (= ch-id (hash (-> @state :left :user :channel))) :left :right)]		
-			(when (and (>= y 0) (<= y (- (:h field) (:h platform))))	
-				(println "Platform " side " move " y)		
-				(send state assoc-in [side :y] y)
-				(say state "platform-move" {:side side :y y})))))
+	(let [side (if (= ch-id (hash (-> @state :left :user :channel))) :left :right)]		
+		(when (and (>= y 0) (<= y (- (:h field) (:h platform))))	
+			(send state assoc-in [side :y] y)
+			(say state "platform-move" {:side side :y y}))))
 
 (defn- check-end-of-game [state]
 	(let [left (- (-> @state :ball :x) ball-radius)
@@ -73,7 +71,6 @@
 (defn- ball-move [state]
 	(send state update-in [:ball :x] + (-> @state :ball :x-speed))
 	(send state update-in [:ball :y] + (-> @state :ball :y-speed))
-	(println "Coord: " {:x (-> @state :ball :x) :y (-> @state :ball :y)})
 	(say state "ball-move" {:x (-> @state :ball :x) :y (-> @state :ball :y)}))
 
 (defn- update [game]
@@ -82,17 +79,18 @@
 		(send game update-in [:ball :x-speed] * -1))
 	(if (check-end-of-game game)
 		(do
-			(println "End of the game")
-			(say game "game-end" "thank you!")
-			(send game nil))
-	(do
-		(process-ball game)	
-		(ball-move game))))
+			(say game "game-end" {:text "thank you!"})
+				(send game assoc-in [:status] false))
+		(do
+			(process-ball game)	
+			(ball-move game))))
 
 (defn run-game [game]
 	(future
 		(loop []
-			(when game
-				(update game)
-				(Thread/sleep (/ 1000 60))
-				(recur)))))
+			(if (:status @game)
+				(do
+					(update game)
+					(Thread/sleep (/ 1000 60))
+					(recur))
+				(println "Thread stop")))))

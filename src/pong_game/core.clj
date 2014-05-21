@@ -17,9 +17,14 @@
 	(doseq [ch (map :channel (vals @lobby))]
 		(send! ch (json/generate-string data))))
 
+(defn- lobby-exit [channel-id]
+  (swap! lobby dissoc channel-id)
+  (send-all {:method "rem-user" :id channel-id}))
+
 (defn- user-exit [channel-id]
-	(swap! lobby dissoc channel-id)
-  (send-all {:method "rem-user" :id channel-id})
+	(lobby-exit channel-id)
+  (when-let [game-agent (get @game channel-id)]
+    (send game-agent assoc-in [:status] false))
 	(swap! game dissoc channel-id))
 
 (defn user-signin [username channel]
@@ -38,7 +43,7 @@
 		(let [game-state (game/new-game me op)]
 			(doseq [p [me op]]
 				(send! (:channel p) (json/generate-string {:method "fight"}))
-				(user-exit (hash (:channel p)))
+        (lobby-exit (hash (:channel p)))
 				(swap! game assoc (hash (:channel p)) game-state))
 			(game/run-game game-state)
 			"ok")
@@ -51,6 +56,23 @@
     	"ok")
     "error"))
 
+(defn user-game-end [ch-id]
+  (if-let [user (if (= ch-id (-> (deref (get @game ch-id)) :left :user :channel hash)) 
+                  (-> (deref (get @game ch-id)) :left :user)
+                  (-> (deref (get @game ch-id)) :right :user))]
+    (do 
+      (swap! game dissoc ch-id)      
+      (send-all {
+        :method "add-user" 
+        :name (:name user) 
+        :id (hash (:channel user))})
+      (swap! lobby assoc ch-id user)
+      (println (:name user) ">>" @game "<->" @lobby)
+      "ok")
+    (do
+      (println ch-id ">>>>>>>>>>>>>" (-> (deref (get @game ch-id)) :left :user :channel hash))
+      "error")))
+
 (defn action-handler [channel data]
   (let [json (json/parse-string data)]
     (json/generate-string
@@ -58,7 +80,8 @@
        :result (case (json "method")
           "signin" (user-signin (json "login") channel)
           "invate-fight" (user-start-fight (hash channel) (json "opponent"))
-          "user-move" (user-move (hash channel) (json "pos")))})))
+          "user-move" (user-move (hash channel) (json "pos"))
+          "user-game-end" (user-game-end (hash channel)))})))
 
 (defn websocket-handler [request]
 	(with-channel request channel

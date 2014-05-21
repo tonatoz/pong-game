@@ -68,7 +68,6 @@ var ws = new WebSocket("ws://localhost:8080/ws");
 
 ws.onclose = function() { 
 	alert("Connection closed...");
-  window.location.replace("http://localhost:8080/");
 }; 
 
 ws.onmessage = function(evt) { 
@@ -76,8 +75,8 @@ ws.onmessage = function(evt) {
 	switch(json.method) {
 		case "signin":
 			if (json.result == "ok"){
-				$("#signin").hide();
-				$("#lobby").removeClass("hidden");
+				$("#signin").hide();        
+				$("#lobby").removeClass("hidden");        
 			}
 			else {
 				alert("такое имя уже занято");
@@ -110,18 +109,30 @@ ws.onmessage = function(evt) {
       draw();
       break;
     case "platform-move":
-      if (json.params.side == "left") 
-        left.y = json.params.y;      
-      else
+      if (json.params.side == "left") {
+        left.y = json.params.y;   
+      }   
+      else {
         right.y = json.params.y;
+      }
       draw();
     	break;
     case "game-end":
-      alert(json.params);
-      // window.location.replace("http://localhost:8080/");
+      console.log("end of game" + json.params.text);
+      ws.send(JSON.stringify({
+        method: "user-game-end"
+      })); 
       break;
-  	case "user-move":
-  		break;
+    case "user-game-end":
+      if (json.result == "error") 
+        console.log("error entering into lobby");
+      else {
+        $("#game").hide();
+        $("#lobby").show();
+      }
+      break;
+    case "user-move":
+      break;
 		default:
 			console.log("Unknown action: " + json.method);
 	}
