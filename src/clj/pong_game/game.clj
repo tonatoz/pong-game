@@ -24,7 +24,7 @@
 		:status true} :error-mode :continue))
 
 (defn- say [state action params]
-	(let [body (generate-string {:method action :params params})]
+	(let [body (generate-string (merge {:method action} params))]
 		(when-let [ch (-> @state :left :user :channel)]
 			(send! ch body))
 		(when-let [ch (-> @state :right :user :channel)]
@@ -34,7 +34,7 @@
 	(let [side (if (= ch-id (hash (-> @state :left :user :channel))) :left :right)]		
 		(when (and (>= y 0) (<= y (- (:h field) (:h platform))))	
 			(send state assoc-in [side :y] y)
-			(say state "platform-move" {:side side :y y}))))
+			(say state "event-platform-move" {:side side :y y}))))
 
 (defn- check-end-of-game [state]
 	(let [left (- (-> @state :ball :x) ball-radius)
@@ -71,7 +71,7 @@
 (defn- ball-move [state]
 	(send state update-in [:ball :x] + (-> @state :ball :x-speed))
 	(send state update-in [:ball :y] + (-> @state :ball :y-speed))
-	(say state "ball-move" {:x (-> @state :ball :x) :y (-> @state :ball :y)}))
+	(say state "event-ball-move" {:x (-> @state :ball :x) :y (-> @state :ball :y)}))
 
 (defn- update [game]
 	(when (or (check-paltform-collision game :left)
@@ -79,7 +79,7 @@
 		(send game update-in [:ball :x-speed] * -1))
 	(if (check-end-of-game game)
 		(do
-			(say game "game-end" {:text "thank you!"})
+			(say game "event-game-end" {:text "thank you!"})
 				(send game assoc-in [:status] false))
 		(do
 			(process-ball game)	

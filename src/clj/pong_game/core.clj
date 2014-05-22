@@ -19,7 +19,7 @@
 
 (defn- lobby-exit [channel-id]
   (swap! lobby dissoc channel-id)
-  (send-all {:method "rem-user" :id channel-id}))
+  (send-all {:method "event-rem-user" :id channel-id}))
 
 (defn- user-exit [channel-id]
 	(lobby-exit channel-id)
@@ -27,64 +27,64 @@
     (send game-agent assoc-in [:status] false))
 	(swap! game dissoc channel-id))
 
-(defn signin [username channel]
-	(if (empty? (filter #(= username (:name %)) @lobby))
-		(do 
-			(send-all {
-				:method "add-user" 
-				:name username 
-				:id (hash channel)})
-			(swap! lobby assoc (hash channel) {:name username :channel channel})
-			(send! channel {
-        :method "event-signin" 
-        :status "ok" 
-        :text "Вход выполнен спешно" 
-        :user-list []}))
-		(send! channel {
-      :method "event-signin" 
-      :status "fail" 
-      :text "такое имя уже занято" 
-      :user-list []})))
+(defn- get-user-list []
+  (map #(hash-map :id (key %) :name (:name (val %))) @lobby))
 
-(defn user-start-fight [me-id op-id]
-	(if-let [[me op] (map #(get @lobby %) [me-id op-id])]
+(defn signin [username channel]
+  (send! channel (json/generate-string 
+    (if (empty? (filter #(= username (:name %)) (vals @lobby)))
+      (let [user-list (get-user-list)]
+        (send-all {
+          :method "event-new-user" 
+          :name username 
+          :id (hash channel)})
+        (swap! lobby assoc (hash channel) {:name username :channel channel})
+        { :method "event-signin" 
+          :status "ok" 
+          :text "Вход выполнен спешно" 
+          :user-list user-list})
+      { :method "event-signin" 
+        :status "fail" 
+        :text "такое имя уже занято" 
+        :user-list []}))))
+
+(defn start-fight [me-id op-id]
+	(when-let [[me op] (map #(get @lobby %) [me-id op-id])]
 		(let [game-state (game/new-game me op)]
 			(doseq [p [me op]]
-				(send! (:channel p) (json/generate-string {:method "fight"}))
         (lobby-exit (hash (:channel p)))
+				(send! (:channel p) (json/generate-string {:method "event-fight"}))        
 				(swap! game assoc (hash (:channel p)) game-state))
-			(game/run-game game-state)
-			"ok")
-		"error"))
+			(game/run-game game-state))))
 
 (defn user-move [ch-id y]
-  (if-let [state (get @game ch-id)]
-    (do
-    	(game/platform-move state ch-id y)
-    	"ok")
-    "error"))
+  (when-let [state (get @game ch-id)]
+    (game/platform-move state ch-id y)))
 
 (defn user-game-end [ch-id]
-  (if-let [user (if (= ch-id (-> (deref (get @game ch-id)) :left :user :channel hash)) 
+  (let [user (if (= ch-id (-> (deref (get @game ch-id)) :left :user :channel hash)) 
                   (-> (deref (get @game ch-id)) :left :user)
-                  (-> (deref (get @game ch-id)) :right :user))]
-    (do 
-      (swap! game dissoc ch-id)      
-      (send-all {
-        :method "add-user" 
-        :name (:name user) 
-        :id (hash (:channel user))})
-      (swap! lobby assoc ch-id user)
-      "ok")
-    "error"))
+                  (-> (deref (get @game ch-id)) :right :user))
+        user-list (get-user-list)]    
+    (swap! game dissoc ch-id)      
+    (send-all {
+      :method "event-new-user" 
+      :name (:name user) 
+      :id (hash (:channel user))})
+    (swap! lobby assoc ch-id user)
+    (send! (:channel user) (json/generate-string {
+      :method "event-signin" 
+      :status "ok" 
+      :text "Вход выполнен спешно" 
+      :user-list user-list}))))
 
 (defn action-handler [channel data]
   (let [json (json/parse-string data)]
     (case (json "method")
       "action-signin" (signin (json "login") channel)
-      "invate-fight" (user-start-fight (hash channel) (json "opponent"))
-      "user-move" (user-move (hash channel) (json "pos"))
-      "user-game-end" (user-game-end (hash channel)))))
+      "action-start-fight" (start-fight (hash channel) (Integer/parseInt (json "with")))
+      "action-move" (user-move (hash channel) (json "pos"))
+      "action-game-end" (user-game-end (hash channel)))))
 
 (defn websocket-handler [request]
 	(with-channel request channel
