@@ -1,4 +1,5 @@
 (ns pong-game.core
+  (:gen-class)
   (:require [org.httpkit.server :refer :all]
   					[compojure.core :refer [defroutes GET]]
   					[compojure.handler :refer [site]]

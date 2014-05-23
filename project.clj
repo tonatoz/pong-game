@@ -9,8 +9,11 @@
                  [org.clojure/clojurescript "0.0-2202"]
                  [enfocus "2.0.2"]]  
   :plugins [[lein-cljsbuild "1.0.3"]]
+  :min-lein-version "2.0.0"
   :source-paths ["src/clj"]
   :main pong-game.core
+  :uberjar-name "pong_server.jar"
+  :aot [pong-game.core]
   :cljsbuild {
     :builds [{
         :source-path "src/cljs"

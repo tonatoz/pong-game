@@ -79,7 +79,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WebSocket
 ;;
-(def ws (js/WebSocket. "ws://localhost:8080/ws"))
+(def ws (js/WebSocket. "ws://pong.tonatoz.com/ws"))
 
 (defn send-ws [method & [params]]
   (.send ws (to-json (merge {:method method} params))))

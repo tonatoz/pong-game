@@ -64,7 +64,6 @@
 
 (defn- process-platform-collision [state]
 	(when (check-paltform-collision state :left)
-		(println @state)
 		(swap! state update-in [:ball :x-speed] * -1)
 		(swap! state assoc-in [:ball :x] (+ (:w platform) ball-radius)))
 	(when (check-paltform-collision state :right)
@@ -97,9 +96,7 @@
 (defn run-game [game]
 	(future
 		(loop []
-			(if (:status @game)
-				(do
-					(update game)
-					(Thread/sleep 10)
-					(recur))
-				(println "Thread stop")))))
+			(when (:status @game)
+				(update game)
+				(Thread/sleep 10)
+				(recur)))))
