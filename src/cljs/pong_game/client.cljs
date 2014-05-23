@@ -61,7 +61,7 @@
   (ef/at ".container" (ef/content (game-snippet)))
   (draw))
 
-(defn platform-move-handler [{:keys [side y]}]
+(defn platform-move [{:keys [side y]}]
   (if (= side "left")
     (swap! left assoc-in [:y] y)
     (swap! right assoc-in [:y] y))
@@ -94,7 +94,7 @@
         "event-new-user" (new-user-handler data)
         "event-rem-user" (ef/at [:tbody [:tr {:data-id (:id data)}]] (ef/remove-node))
         "event-fight" (start-game)
-        "event-platform-move" (platform-move-handler data)
+        "event-platform-move" (platform-move data)
         "event-ball-move" (ball-move data)
         "event-game-end" (end-of-game (:text data))
         (log (str "Неизвестный метод: " (:method data)))))))

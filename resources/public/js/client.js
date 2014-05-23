@@ -36542,12 +36542,12 @@ pong_game.core.draw = function draw() {
   ctx.arc((new cljs.core.Keyword(null, "x", "x", 1013904362)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, pong_game.core.ball)), (new cljs.core.Keyword(null, "y", "y", 1013904363)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, pong_game.core.ball)), (new cljs.core.Keyword(null, "r", "r", 1013904356)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, pong_game.core.ball)), 0, Math.PI * 2, false);
   return ctx.fill();
 };
-pong_game.core.signin_handler = function signin_handler(p__5875) {
-  var map__5877 = p__5875;
-  var map__5877__$1 = cljs.core.seq_QMARK_.call(null, map__5877) ? cljs.core.apply.call(null, cljs.core.hash_map, map__5877) : map__5877;
-  var text = cljs.core.get.call(null, map__5877__$1, new cljs.core.Keyword(null, "text", "text", 1017460895));
-  var user_list = cljs.core.get.call(null, map__5877__$1, new cljs.core.Keyword(null, "user-list", "user-list", 1307017426));
-  var status = cljs.core.get.call(null, map__5877__$1, new cljs.core.Keyword(null, "status", "status", 4416389988));
+pong_game.core.signin_handler = function signin_handler(p__5486) {
+  var map__5488 = p__5486;
+  var map__5488__$1 = cljs.core.seq_QMARK_.call(null, map__5488) ? cljs.core.apply.call(null, cljs.core.hash_map, map__5488) : map__5488;
+  var text = cljs.core.get.call(null, map__5488__$1, new cljs.core.Keyword(null, "text", "text", 1017460895));
+  var user_list = cljs.core.get.call(null, map__5488__$1, new cljs.core.Keyword(null, "user-list", "user-list", 1307017426));
+  var status = cljs.core.get.call(null, map__5488__$1, new cljs.core.Keyword(null, "status", "status", 4416389988));
   if (cljs.core._EQ_.call(null, "ok", status)) {
     return enfocus.core.at.call(null, ".container", enfocus.core.content.call(null, pong_game.core.lobby_snippet.call(null, user_list)));
   } else {
@@ -36561,11 +36561,11 @@ pong_game.core.start_game = function start_game() {
   enfocus.core.at.call(null, ".container", enfocus.core.content.call(null, pong_game.core.game_snippet.call(null)));
   return pong_game.core.draw.call(null);
 };
-pong_game.core.platform_move_handler = function platform_move_handler(p__5878) {
-  var map__5880 = p__5878;
-  var map__5880__$1 = cljs.core.seq_QMARK_.call(null, map__5880) ? cljs.core.apply.call(null, cljs.core.hash_map, map__5880) : map__5880;
-  var y = cljs.core.get.call(null, map__5880__$1, new cljs.core.Keyword(null, "y", "y", 1013904363));
-  var side = cljs.core.get.call(null, map__5880__$1, new cljs.core.Keyword(null, "side", "side", 1017434313));
+pong_game.core.platform_move = function platform_move(p__5489) {
+  var map__5491 = p__5489;
+  var map__5491__$1 = cljs.core.seq_QMARK_.call(null, map__5491) ? cljs.core.apply.call(null, cljs.core.hash_map, map__5491) : map__5491;
+  var y = cljs.core.get.call(null, map__5491__$1, new cljs.core.Keyword(null, "y", "y", 1013904363));
+  var side = cljs.core.get.call(null, map__5491__$1, new cljs.core.Keyword(null, "side", "side", 1017434313));
   if (cljs.core._EQ_.call(null, side, "left")) {
     cljs.core.swap_BANG_.call(null, pong_game.core.left, cljs.core.assoc_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "y", "y", 1013904363)], null), y);
   } else {
@@ -36573,11 +36573,11 @@ pong_game.core.platform_move_handler = function platform_move_handler(p__5878) {
   }
   return pong_game.core.draw.call(null);
 };
-pong_game.core.ball_move = function ball_move(p__5881) {
-  var map__5883 = p__5881;
-  var map__5883__$1 = cljs.core.seq_QMARK_.call(null, map__5883) ? cljs.core.apply.call(null, cljs.core.hash_map, map__5883) : map__5883;
-  var y = cljs.core.get.call(null, map__5883__$1, new cljs.core.Keyword(null, "y", "y", 1013904363));
-  var x = cljs.core.get.call(null, map__5883__$1, new cljs.core.Keyword(null, "x", "x", 1013904362));
+pong_game.core.ball_move = function ball_move(p__5492) {
+  var map__5494 = p__5492;
+  var map__5494__$1 = cljs.core.seq_QMARK_.call(null, map__5494) ? cljs.core.apply.call(null, cljs.core.hash_map, map__5494) : map__5494;
+  var y = cljs.core.get.call(null, map__5494__$1, new cljs.core.Keyword(null, "y", "y", 1013904363));
+  var x = cljs.core.get.call(null, map__5494__$1, new cljs.core.Keyword(null, "x", "x", 1013904362));
   cljs.core.swap_BANG_.call(null, pong_game.core.ball, cljs.core.assoc_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "x", "x", 1013904362)], null), x);
   cljs.core.swap_BANG_.call(null, pong_game.core.ball, cljs.core.assoc_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "y", "y", 1013904363)], null), y);
   return pong_game.core.draw.call(null);
@@ -36588,23 +36588,23 @@ pong_game.core.end_of_game = function end_of_game(text) {
 };
 pong_game.core.ws = new WebSocket("ws://localhost:8080/ws");
 pong_game.core.send_ws = function() {
-  var send_ws__delegate = function(method, p__5884) {
-    var vec__5886 = p__5884;
-    var params = cljs.core.nth.call(null, vec__5886, 0, null);
+  var send_ws__delegate = function(method, p__5495) {
+    var vec__5497 = p__5495;
+    var params = cljs.core.nth.call(null, vec__5497, 0, null);
     return pong_game.core.ws.send(pong_game.core.to_json.call(null, cljs.core.merge.call(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "method", "method", 4231316563), method], null), params)));
   };
   var send_ws = function(method, var_args) {
-    var p__5884 = null;
+    var p__5495 = null;
     if (arguments.length > 1) {
-      p__5884 = cljs.core.array_seq(Array.prototype.slice.call(arguments, 1), 0);
+      p__5495 = cljs.core.array_seq(Array.prototype.slice.call(arguments, 1), 0);
     }
-    return send_ws__delegate.call(this, method, p__5884);
+    return send_ws__delegate.call(this, method, p__5495);
   };
   send_ws.cljs$lang$maxFixedArity = 1;
-  send_ws.cljs$lang$applyTo = function(arglist__5887) {
-    var method = cljs.core.first(arglist__5887);
-    var p__5884 = cljs.core.rest(arglist__5887);
-    return send_ws__delegate(method, p__5884);
+  send_ws.cljs$lang$applyTo = function(arglist__5498) {
+    var method = cljs.core.first(arglist__5498);
+    var p__5495 = cljs.core.rest(arglist__5498);
+    return send_ws__delegate(method, p__5495);
   };
   send_ws.cljs$core$IFn$_invoke$arity$variadic = send_ws__delegate;
   return send_ws;
@@ -36614,27 +36614,27 @@ pong_game.core.ws.onclose = function() {
 };
 pong_game.core.ws.onmessage = function(event) {
   var data = pong_game.core.parse_json.call(null, event.data);
-  var G__5888 = (new cljs.core.Keyword(null, "method", "method", 4231316563)).cljs$core$IFn$_invoke$arity$1(data);
-  if (cljs.core._EQ_.call(null, "event-game-end", G__5888)) {
+  var G__5499 = (new cljs.core.Keyword(null, "method", "method", 4231316563)).cljs$core$IFn$_invoke$arity$1(data);
+  if (cljs.core._EQ_.call(null, "event-game-end", G__5499)) {
     return pong_game.core.end_of_game.call(null, (new cljs.core.Keyword(null, "text", "text", 1017460895)).cljs$core$IFn$_invoke$arity$1(data));
   } else {
-    if (cljs.core._EQ_.call(null, "event-ball-move", G__5888)) {
+    if (cljs.core._EQ_.call(null, "event-ball-move", G__5499)) {
       return pong_game.core.ball_move.call(null, data);
     } else {
-      if (cljs.core._EQ_.call(null, "event-platform-move", G__5888)) {
-        return pong_game.core.platform_move_handler.call(null, data);
+      if (cljs.core._EQ_.call(null, "event-platform-move", G__5499)) {
+        return pong_game.core.platform_move.call(null, data);
       } else {
-        if (cljs.core._EQ_.call(null, "event-fight", G__5888)) {
+        if (cljs.core._EQ_.call(null, "event-fight", G__5499)) {
           return pong_game.core.start_game.call(null);
         } else {
-          if (cljs.core._EQ_.call(null, "event-rem-user", G__5888)) {
+          if (cljs.core._EQ_.call(null, "event-rem-user", G__5499)) {
             return enfocus.core.at.call(null, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "tbody", "tbody", 1124062088), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "tr", "tr", 1013907952), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "data-id", "data-id", 2457051536), (new cljs.core.Keyword(null, "id", "id", 1013907597)).cljs$core$IFn$_invoke$arity$1(data)], 
             null)], null)], null), enfocus.core.remove_node.call(null));
           } else {
-            if (cljs.core._EQ_.call(null, "event-new-user", G__5888)) {
+            if (cljs.core._EQ_.call(null, "event-new-user", G__5499)) {
               return pong_game.core.new_user_handler.call(null, data);
             } else {
-              if (cljs.core._EQ_.call(null, "event-signin", G__5888)) {
+              if (cljs.core._EQ_.call(null, "event-signin", G__5499)) {
                 return pong_game.core.signin_handler.call(null, data);
               } else {
                 if (new cljs.core.Keyword(null, "else", "else", 1017020587)) {
@@ -36650,77 +36650,77 @@ pong_game.core.ws.onmessage = function(event) {
     }
   }
 };
-enfocus.core.load_remote_dom.call(null, "/template.html", "remote/template.html", "en5460_");
+enfocus.core.load_remote_dom.call(null, "/template.html", "remote/template.html", "en5470_");
 if (cljs.core.deref.call(null, enfocus.core.tpl_cache).call(null, "remote/template.html") == null) {
   cljs.core.swap_BANG_.call(null, enfocus.core.tpl_cache, cljs.core.assoc, "remote/template.html", new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["", "NOT_LOADED"], null));
 } else {
 }
 pong_game.core.signin_snippet = function signin_snippet() {
-  var vec__5892 = function() {
+  var vec__5503 = function() {
     return enfocus.core.get_cached_snippet.call(null, "remote/template.html", "#signin");
   }.call(null);
-  var id_sym5889 = cljs.core.nth.call(null, vec__5892, 0, null);
-  var pnod5890 = cljs.core.nth.call(null, vec__5892, 1, null);
-  var pnod5890__$1 = enfocus.core.create_hidden_dom.call(null, pnod5890);
-  enfocus.core.i_at.call(null, id_sym5889, pnod5890__$1, "form", enfocus.events.listen.call(null, new cljs.core.Keyword(null, "submit", "submit", 4417336202), function(vec__5892, id_sym5889, pnod5890, pnod5890__$1) {
+  var id_sym5500 = cljs.core.nth.call(null, vec__5503, 0, null);
+  var pnod5501 = cljs.core.nth.call(null, vec__5503, 1, null);
+  var pnod5501__$1 = enfocus.core.create_hidden_dom.call(null, pnod5501);
+  enfocus.core.i_at.call(null, id_sym5500, pnod5501__$1, "form", enfocus.events.listen.call(null, new cljs.core.Keyword(null, "submit", "submit", 4417336202), function(vec__5503, id_sym5500, pnod5501, pnod5501__$1) {
     return function(event) {
       event.preventDefault();
       return pong_game.core.send_ws.call(null, "action-signin", new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "login", "login", 1117053659), (new cljs.core.Keyword(null, "username", "username", 748190792)).cljs$core$IFn$_invoke$arity$1(enfocus.core.from.call(null, "form", enfocus.core.read_form.call(null)))], null));
     };
-  }(vec__5892, id_sym5889, pnod5890, pnod5890__$1)));
-  enfocus.core.reset_ids.call(null, id_sym5889, pnod5890__$1);
-  return enfocus.core.remove_node_return_child.call(null, pnod5890__$1);
+  }(vec__5503, id_sym5500, pnod5501, pnod5501__$1)));
+  enfocus.core.reset_ids.call(null, id_sym5500, pnod5501__$1);
+  return enfocus.core.remove_node_return_child.call(null, pnod5501__$1);
 };
-pong_game.core.user_tbl_row = function user_tbl_row(p__5893) {
-  var map__5895 = p__5893;
-  var map__5895__$1 = cljs.core.seq_QMARK_.call(null, map__5895) ? cljs.core.apply.call(null, cljs.core.hash_map, map__5895) : map__5895;
-  var name = cljs.core.get.call(null, map__5895__$1, new cljs.core.Keyword(null, "name", "name", 1017277949));
-  var id = cljs.core.get.call(null, map__5895__$1, new cljs.core.Keyword(null, "id", "id", 1013907597));
+pong_game.core.user_tbl_row = function user_tbl_row(p__5504) {
+  var map__5506 = p__5504;
+  var map__5506__$1 = cljs.core.seq_QMARK_.call(null, map__5506) ? cljs.core.apply.call(null, cljs.core.hash_map, map__5506) : map__5506;
+  var name = cljs.core.get.call(null, map__5506__$1, new cljs.core.Keyword(null, "name", "name", 1017277949));
+  var id = cljs.core.get.call(null, map__5506__$1, new cljs.core.Keyword(null, "id", "id", 1013907597));
   return enfocus.core.html.call(null, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "tr", "tr", 1013907952), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "td", "td", 1013907938), name], null), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "td", "td", 1013907938), new cljs.core.PersistentVector(null, 3, 5, 
   cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "button.fight-btn.btn.btn-primary", "button.fight-btn.btn.btn-primary", 2054701542), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "data-id", "data-id", 2457051536), id], null), "\u0421\u0440\u0430\u0437\u0438\u0442\u044c\u0441\u044f"], null)], null)], null));
 };
-enfocus.core.load_remote_dom.call(null, "/template.html", "remote/template.html", "en5460_");
+enfocus.core.load_remote_dom.call(null, "/template.html", "remote/template.html", "en5470_");
 if (cljs.core.deref.call(null, enfocus.core.tpl_cache).call(null, "remote/template.html") == null) {
   cljs.core.swap_BANG_.call(null, enfocus.core.tpl_cache, cljs.core.assoc, "remote/template.html", new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["", "NOT_LOADED"], null));
 } else {
 }
 pong_game.core.lobby_snippet = function lobby_snippet(user_list) {
-  var vec__5899 = function() {
+  var vec__5510 = function() {
     return enfocus.core.get_cached_snippet.call(null, "remote/template.html", "#lobby");
   }.call(null);
-  var id_sym5896 = cljs.core.nth.call(null, vec__5899, 0, null);
-  var pnod5897 = cljs.core.nth.call(null, vec__5899, 1, null);
-  var pnod5897__$1 = enfocus.core.create_hidden_dom.call(null, pnod5897);
-  enfocus.core.i_at.call(null, id_sym5896, pnod5897__$1, "tbody", cljs.core.apply.call(null, enfocus.core.append, cljs.core.map.call(null, pong_game.core.user_tbl_row, user_list)), "table", enfocus.events.listen_live.call(null, new cljs.core.Keyword(null, "click", "click", 1108654330), ".fight-btn", function(vec__5899, id_sym5896, pnod5897, pnod5897__$1) {
+  var id_sym5507 = cljs.core.nth.call(null, vec__5510, 0, null);
+  var pnod5508 = cljs.core.nth.call(null, vec__5510, 1, null);
+  var pnod5508__$1 = enfocus.core.create_hidden_dom.call(null, pnod5508);
+  enfocus.core.i_at.call(null, id_sym5507, pnod5508__$1, "tbody", cljs.core.apply.call(null, enfocus.core.append, cljs.core.map.call(null, pong_game.core.user_tbl_row, user_list)), "table", enfocus.events.listen_live.call(null, new cljs.core.Keyword(null, "click", "click", 1108654330), ".fight-btn", function(vec__5510, id_sym5507, pnod5508, pnod5508__$1) {
     return function(event) {
       return pong_game.core.send_ws.call(null, "action-start-fight", new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "with", "with", 1017553976), enfocus.core.from.call(null, event.target, enfocus.core.get_attr.call(null, "data-id"))], null));
     };
-  }(vec__5899, id_sym5896, pnod5897, pnod5897__$1)));
-  enfocus.core.reset_ids.call(null, id_sym5896, pnod5897__$1);
-  return enfocus.core.remove_node_return_child.call(null, pnod5897__$1);
+  }(vec__5510, id_sym5507, pnod5508, pnod5508__$1)));
+  enfocus.core.reset_ids.call(null, id_sym5507, pnod5508__$1);
+  return enfocus.core.remove_node_return_child.call(null, pnod5508__$1);
 };
-enfocus.core.load_remote_dom.call(null, "/template.html", "remote/template.html", "en5460_");
+enfocus.core.load_remote_dom.call(null, "/template.html", "remote/template.html", "en5470_");
 if (cljs.core.deref.call(null, enfocus.core.tpl_cache).call(null, "remote/template.html") == null) {
   cljs.core.swap_BANG_.call(null, enfocus.core.tpl_cache, cljs.core.assoc, "remote/template.html", new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, ["", "NOT_LOADED"], null));
 } else {
 }
 pong_game.core.game_snippet = function game_snippet() {
-  var vec__5903 = function() {
+  var vec__5514 = function() {
     return enfocus.core.get_cached_snippet.call(null, "remote/template.html", "#game");
   }.call(null);
-  var id_sym5900 = cljs.core.nth.call(null, vec__5903, 0, null);
-  var pnod5901 = cljs.core.nth.call(null, vec__5903, 1, null);
-  var pnod5901__$1 = enfocus.core.create_hidden_dom.call(null, pnod5901);
-  enfocus.core.i_at.call(null, id_sym5900, pnod5901__$1, "#canvas", enfocus.events.listen.call(null, new cljs.core.Keyword(null, "mousemove", "mousemove", 1601016168), function(vec__5903, id_sym5900, pnod5901, pnod5901__$1) {
+  var id_sym5511 = cljs.core.nth.call(null, vec__5514, 0, null);
+  var pnod5512 = cljs.core.nth.call(null, vec__5514, 1, null);
+  var pnod5512__$1 = enfocus.core.create_hidden_dom.call(null, pnod5512);
+  enfocus.core.i_at.call(null, id_sym5511, pnod5512__$1, "#canvas", enfocus.events.listen.call(null, new cljs.core.Keyword(null, "mousemove", "mousemove", 1601016168), function(vec__5514, id_sym5511, pnod5512, pnod5512__$1) {
     return function(event) {
       var canvas = document.getElementById("canvas");
       var top = canvas.getBoundingClientRect().top;
       var mouse_y = event.clientY;
       return pong_game.core.send_ws.call(null, "action-move", new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "pos", "pos", 1014015430), mouse_y - top], null));
     };
-  }(vec__5903, id_sym5900, pnod5901, pnod5901__$1)));
-  enfocus.core.reset_ids.call(null, id_sym5900, pnod5901__$1);
-  return enfocus.core.remove_node_return_child.call(null, pnod5901__$1);
+  }(vec__5514, id_sym5511, pnod5512, pnod5512__$1)));
+  enfocus.core.reset_ids.call(null, id_sym5511, pnod5512__$1);
+  return enfocus.core.remove_node_return_child.call(null, pnod5512__$1);
 };
 pong_game.core.start = function start() {
   return enfocus.core.at.call(null, ".container", enfocus.core.content.call(null, pong_game.core.signin_snippet.call(null)));

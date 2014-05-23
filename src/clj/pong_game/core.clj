@@ -24,7 +24,7 @@
 (defn- user-exit [channel-id]
 	(lobby-exit channel-id)
   (when-let [game-agent (get @game channel-id)]
-    (send game-agent assoc-in [:status] false))
+    (game/stop-game game-agent))
 	(swap! game dissoc channel-id))
 
 (defn- get-user-list []

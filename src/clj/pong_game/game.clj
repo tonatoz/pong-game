@@ -3,11 +3,11 @@
 						[cheshire.core :refer [generate-string]]))
 
 (def field {:w 729 :h 537})
-(def ^Integer ball-radius 5)
+(def ball-radius 5)
 (def platform {:w 5 :h 150})
 
 (defn new-game [left-user right-user]
-	(agent {
+	(atom {
 		:left {
 			:user left-user
 			:x 0
@@ -21,7 +21,7 @@
 			:y 50
 			:x-speed 8
 			:y-speed 4}
-		:status true} :error-mode :continue))
+		:status true}))
 
 (defn- say [state action params]
 	(let [body (generate-string (merge {:method action} params))]
@@ -30,10 +30,14 @@
 		(when-let [ch (-> @state :right :user :channel)]
 			(send! ch body))))
 
+(defn stop-game [state]
+	(say state "event-game-end" {:text "thank you!"})
+	(swap! state assoc-in [:status] false))
+
 (defn platform-move [state ch-id y]
 	(let [side (if (= ch-id (hash (-> @state :left :user :channel))) :left :right)]		
 		(when (and (>= y 0) (<= y (- (:h field) (:h platform))))	
-			(send state assoc-in [side :y] y)
+			(swap! state assoc-in [side :y] y)
 			(say state "event-platform-move" {:side side :y y}))))
 
 (defn- check-end-of-game [state]
@@ -53,34 +57,39 @@
 				(>= (- by ball-radius) py)
 		 		(<= (+ by ball-radius) (+ py (:h platform))))
 			(or
-				(and (>= bx (- px (:w platform)))
+				(and (>= bx px)
 						 (> px 0))
 				(and (<= bx (:w platform))
 					   (= px 0))))))
+
+(defn- process-platform-collision [state]
+	(when (check-paltform-collision state :left)
+		(println @state)
+		(swap! state update-in [:ball :x-speed] * -1)
+		(swap! state assoc-in [:ball :x] (+ (:w platform) ball-radius)))
+	(when (check-paltform-collision state :right)
+		(swap! state update-in [:ball :x-speed] * -1)
+		(swap! state assoc-in [:ball :x] (- (:w field) (:w platform) ball-radius))))
 
 (defn- process-ball [state]
 	(let [top (- (-> @state :ball :y) ball-radius)
 				bottom (+ (-> @state :ball :y) ball-radius)]
 		(when (< top 0) 
-			(send state update-in [:ball :y-speed] * -1)
-			(send state assoc-in [:ball :y] ball-radius))
+			(swap! state update-in [:ball :y-speed] * -1)
+			(swap! state assoc-in [:ball :y] ball-radius))
 		(when (> bottom (:h field)) 
-			(send state update-in [:ball :y-speed] * -1)
-			(send state assoc-in [:ball :y] (- (:h field) ball-radius)))))
+			(swap! state update-in [:ball :y-speed] * -1)
+			(swap! state assoc-in [:ball :y] (- (:h field) ball-radius)))))
 
 (defn- ball-move [state]
-	(send state update-in [:ball :x] + (-> @state :ball :x-speed))
-	(send state update-in [:ball :y] + (-> @state :ball :y-speed))
+	(swap! state update-in [:ball :x] + (-> @state :ball :x-speed))
+	(swap! state update-in [:ball :y] + (-> @state :ball :y-speed))
 	(say state "event-ball-move" {:x (-> @state :ball :x) :y (-> @state :ball :y)}))
 
 (defn- update [game]
-	(when (or (check-paltform-collision game :left)
-						(check-paltform-collision game :right))
-		(send game update-in [:ball :x-speed] * -1))
+	(process-platform-collision game)
 	(if (check-end-of-game game)
-		(do
-			(say game "event-game-end" {:text "thank you!"})
-				(send game assoc-in [:status] false))
+		(stop-game game)
 		(do
 			(process-ball game)	
 			(ball-move game))))
@@ -91,6 +100,6 @@
 			(if (:status @game)
 				(do
 					(update game)
-					(Thread/sleep (/ 1000 60))
+					(Thread/sleep 10)
 					(recur))
 				(println "Thread stop")))))
