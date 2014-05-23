@@ -79,7 +79,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WebSocket
 ;;
-(def ws (js/WebSocket. "ws://pong.tonatoz.com/ws"))
+(def ws 
+  (js/WebSocket. (str "ws://" (.-host (.-location js/window)) "/ws")))
+
 
 (defn send-ws [method & [params]]
   (.send ws (to-json (merge {:method method} params))))
