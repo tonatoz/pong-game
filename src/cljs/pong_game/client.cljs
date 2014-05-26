@@ -91,7 +91,8 @@
   (send-ws "action-game-end"))
 
 (defn update-score [{:keys [left-score right-score]}]
-  (ef/at "#score" (ef/content (str "Счет: " left-score ":" right-score))))
+  (ef/at "#left-score" (ef/content (str left-score)))
+  (ef/at "#right-score" (ef/content (str right-score))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WebSocket
@@ -142,8 +143,9 @@
       (send-ws "action-start-fight" {
         :with (ef/from (.-target event) (ef/get-attr "data-id"))}))))
 
-(em/defsnippet game-snippet "/template.html" "#game" [users]
-  "#users" (ef/content (str "Битва между " (first users) " и " (second users)))
+(em/defsnippet game-snippet "/template.html" "#game" [[left-user right-user]]
+  "#left-user" (ef/content left-user)
+  "#right-user" (ef/content right-user)
   "#canvas" (ev/listen :mousemove 
     (fn [event]
       (let [canvas (.getElementById js/document "canvas")
