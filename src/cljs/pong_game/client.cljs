@@ -73,8 +73,7 @@
   (ef/at "tbody" (ef/append (user-tbl-row user))))
 
 (defn start-game [{:keys [users]}]
-  (ef/at ".container" (ef/content (game-snippet)))
-  (ef/at "#users" (ef/content (str "Битва между " (first users) " и " (second users)))))
+  (ef/at ".container" (ef/content (game-snippet users))))
 
 (defn platform-move [{:keys [side y]}]
   (if (= side "left")
@@ -143,7 +142,8 @@
       (send-ws "action-start-fight" {
         :with (ef/from (.-target event) (ef/get-attr "data-id"))}))))
 
-(em/defsnippet game-snippet "/template.html" "#game" []
+(em/defsnippet game-snippet "/template.html" "#game" [users]
+  "#users" (ef/content (str "Битва между " (first users) " и " (second users)))
   "#canvas" (ev/listen :mousemove 
     (fn [event]
       (let [canvas (.getElementById js/document "canvas")

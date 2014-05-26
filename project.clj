@@ -1,6 +1,6 @@
-(defproject pong-game "0.1.5-SNAPSHOT"
+(defproject pong-game "0.2.0-SNAPSHOT"
   :description "Online PingPong game"
-  :url "http://clojure.tonatoz.com/"
+  :url "https://github.com/tonatoz/pong-game/"
   :dependencies [[org.clojure/clojure "1.6.0"]
   							 [http-kit "2.1.16"]
   							 [compojure "1.1.8"]
@@ -19,5 +19,5 @@
         :source-path "src/cljs"
         :compiler {
           :output-to "resources/public/js/client.js" 
-          :optimizations :whitespace
-          :pretty-print true}}]})
+          :optimizations :advanced
+          :pretty-print false}}]})

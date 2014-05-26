@@ -4,7 +4,7 @@
 
 (def field {:w 729 :h 537})
 (def ball-radius 5)
-(def ball-init {:x 50 :y 50 :x-speed 8 :y-speed 4})
+(def ball-init {:x 350 :y 150 :x-speed 8 :y-speed 4})
 (def platform {:w 5 :h 150})
 (def stop-score 10)
 
@@ -41,23 +41,21 @@
 				(say state "event-platform-move" {:side side :y y})))))
 
 (defn- update-score [state side-win]
+	(when (odd? (-> @state side-win :score))
+		(swap! state update-in [:fps] dec))	
+	(swap! state assoc-in [:ball] ball-init)
 	(swap! state update-in [side-win :score] inc)
 	(say state "event-update-score" {
 		:left-score (-> @state :left :score)
-		:right-score (-> @state :right :score)}))
+		:right-score (-> @state :right :score)})
+	(>= (-> @state side-win :score) stop-score))
 
 (defn- check-end-of-game [state]
 	(let [b-left (- (-> @state :ball :x) ball-radius)
 				b-right (+ (-> @state :ball :x) ball-radius)]
 		(cond
-			(< b-left 0) (do
-				(update-score state :right)
-				(swap! state assoc-in [:ball] ball-init)
-				(>= (-> @state :right :score) stop-score))
-			(> b-right (:w field)) (do
-				(update-score state :left)
-				(swap! state assoc-in [:ball] ball-init)
-				(>= (-> @state :left :score) stop-score)))))
+			(< b-left 0) (update-score state :right)
+			(> b-right (:w field)) (update-score state :left))))
 
 (defn- check-paltform-collision [state side]
 	(let [bx (-> @state :ball :x)
@@ -83,12 +81,12 @@
 		(swap! state assoc-in [:ball :x] (- (:w field) (:w platform) ball-radius))))
 
 (defn- process-ball [state]
-	(let [top (- (-> @state :ball :y) ball-radius)
-				bottom (+ (-> @state :ball :y) ball-radius)]
-		(when (< top 0) 
+	(let [b-top (- (-> @state :ball :y) ball-radius)
+				b-bottom (+ (-> @state :ball :y) ball-radius)]
+		(when (< b-top 0) 
 			(swap! state update-in [:ball :y-speed] * -1)
 			(swap! state assoc-in [:ball :y] ball-radius))
-		(when (> bottom (:h field)) 
+		(when (> b-bottom (:h field)) 
 			(swap! state update-in [:ball :y-speed] * -1)
 			(swap! state assoc-in [:ball :y] (- (:h field) ball-radius)))))
 

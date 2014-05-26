@@ -2,7 +2,7 @@
  
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON=/home/tonatoz/www/pong/run.sh
-PIDDIR=/home/tonatoz/www/pong/tmp/pids/pong_server.pid
+PIDDIR=/home/tonatoz/www/pong/pids/
 PIDFILE="$PIDDIR/pong_server.pid"
 USER="tonatoz"
  
