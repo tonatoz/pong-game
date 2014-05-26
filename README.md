@@ -1,7 +1,7 @@
 # Pong game
 
-Курсовая (4-неделя) для курса по Clojure (http://clojurecourse.by/)
-Демо - (http://pong.tonatoz.com/)
+Курсовая (4-неделя) для курса по Clojure http://clojurecourse.by/
+Демо - http://pong.tonatoz.com/
 
 ## Описалово
 

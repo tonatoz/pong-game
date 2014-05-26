@@ -54,7 +54,9 @@
 		(let [game-state (game/new-game me op)]
 			(doseq [p [me op]]
         (lobby-exit (hash (:channel p)))
-				(send! (:channel p) (json/generate-string {:method "event-fight"}))        
+				(send! (:channel p) (json/generate-string {
+          :method "event-fight" 
+          :users [(:name me) (:name op)]}))        
 				(swap! game assoc (hash (:channel p)) game-state))
 			(game/run-game game-state))))
 
@@ -104,4 +106,4 @@
 	(run-server 
 		(-> #'app
 			site
-			wrap-reload) {:port 8080}))
+			wrap-reload) {:port 3000}))

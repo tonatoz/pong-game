@@ -27,22 +27,37 @@
 (def right (atom {:w 5, :h 150, :y (- (/ W 2) (/ 5 2)), :x (- W  5)}))
 (def ball  (atom {:x 50, :y 50, :r 5}))
 
+(defn- draw-canvas [ctx]
+  (set! (.-fillStyle ctx) "black")
+  (.fillRect ctx 0 0 W H))
+
+(defn- draw-platfiorm [ctx side]
+  (set! (.-fillStyle ctx) "white")
+  (.fillRect ctx (:x @side) (:y @side) (:w @side) (:h @side)))
+
+(defn- draw-ball [ctx]
+  (.beginPath ctx)
+  (set! (.-fillStyle ctx) "white")
+  (.arc ctx (:x @ball) (:y @ball) (:r @ball) 0 (* js/Math.PI 2) false)
+  (.fill ctx))
+
 (defn draw []
   (let [canvas (.getElementById js/document "canvas")
         ctx (.getContext canvas "2d")]
-    ;; Draw canvas
-    (set! (.-fillStyle ctx) "black")
-    (.fillRect ctx 0 0 W H)
-    ;; Draw platforms
-    (set! (.-fillStyle ctx) "white")
-    (.fillRect ctx (:x @left) (:y @left) (:w @left) (:h @left))
-    (set! (.-fillStyle ctx) "white")
-    (.fillRect ctx (:x @right) (:y @right) (:w @right) (:h @right))
-    ;; Draw ball
-    (.beginPath ctx)
-    (set! (.-fillStyle ctx) "white")
-    (.arc ctx (:x @ball) (:y @ball) (:r @ball) 0 (* js/Math.PI 2) false)
-    (.fill ctx)))
+    (draw-canvas ctx)
+    (draw-platfiorm ctx left)
+    (draw-platfiorm ctx right)
+    (draw-ball ctx)))
+
+(defn game-print [text]
+  (let [canvas (.getElementById js/document "canvas")
+        ctx (.getContext canvas "2d")]   
+    (.clearRect ctx 0 0 W H) 
+    (set! (.-fillStlye ctx) "white")
+    (set! (.-font ctx) "25px Arial, sans-serif")
+    (set! (.-textAlign ctx) "center")
+    (set! (.-textBaseline ctx) "middle")
+    (.fillText ctx text (/ W 2) (/ H 2))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; User action & events
@@ -57,9 +72,9 @@
 (defn new-user-handler [user]
   (ef/at "tbody" (ef/append (user-tbl-row user))))
 
-(defn start-game []
+(defn start-game [{:keys [users]}]
   (ef/at ".container" (ef/content (game-snippet)))
-  (draw))
+  (ef/at "#users" (ef/content (str "Битва между " (first users) " и " (second users)))))
 
 (defn platform-move [{:keys [side y]}]
   (if (= side "left")
@@ -76,12 +91,14 @@
   (js/alert text)
   (send-ws "action-game-end"))
 
+(defn update-score [{:keys [left-score right-score]}]
+  (ef/at "#score" (ef/content (str "Счет: " left-score ":" right-score))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WebSocket
 ;;
 (def ws 
   (js/WebSocket. (str "ws://" (.-host (.-location js/window)) "/ws")))
-
 
 (defn send-ws [method & [params]]
   (.send ws (to-json (merge {:method method} params))))
@@ -95,9 +112,11 @@
         "event-signin" (signin-handler data)
         "event-new-user" (new-user-handler data)
         "event-rem-user" (ef/at [:tbody [:tr {:data-id (:id data)}]] (ef/remove-node))
-        "event-fight" (start-game)
+        "event-fight" (start-game data)
+        "event-start-after" (game-print (str "Игра начнеться через: " (:after data)))
         "event-platform-move" (platform-move data)
         "event-ball-move" (ball-move data)
+        "event-update-score" (update-score data)
         "event-game-end" (end-of-game (:text data))
         (log (str "Неизвестный метод: " (:method data)))))))
 
