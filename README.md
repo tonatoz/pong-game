@@ -33,7 +33,6 @@ upstream cl_pong {
 server {
   server_name pong.***.com;
   gzip on;  
-  keepalive_timeout 256;
 
   location / {
     proxy_pass  http://cl_pong;
